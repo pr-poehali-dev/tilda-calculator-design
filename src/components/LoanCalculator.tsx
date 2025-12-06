@@ -15,7 +15,7 @@ interface PaymentSchedule {
 const LoanCalculator = () => {
   const [amount, setAmount] = useState(300000);
   const [term, setTerm] = useState(12);
-  const [rate, setRate] = useState(18);
+  const dailyRate = 0.08;
 
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [totalPayment, setTotalPayment] = useState(0);
@@ -23,7 +23,7 @@ const LoanCalculator = () => {
   const [schedule, setSchedule] = useState<PaymentSchedule[]>([]);
 
   useEffect(() => {
-    const monthlyRate = rate / 100 / 12;
+    const monthlyRate = (dailyRate * 30) / 100;
     const payment = amount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
     const total = payment * term;
     const over = total - amount;
@@ -50,7 +50,7 @@ const LoanCalculator = () => {
     }
 
     setSchedule(newSchedule);
-  }, [amount, term, rate]);
+  }, [amount, term]);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(num);
@@ -114,24 +114,7 @@ const LoanCalculator = () => {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-base font-medium text-gray-700">Процентная ставка</Label>
-                  <span className="text-2xl font-bold text-blue-600">{rate}%</span>
-                </div>
-                <Slider
-                  value={[rate]}
-                  onValueChange={(val) => setRate(val[0])}
-                  min={5}
-                  max={30}
-                  step={0.5}
-                  className="cursor-pointer"
-                />
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>5%</span>
-                  <span>30%</span>
-                </div>
-              </div>
+
             </CardContent>
           </Card>
 
@@ -163,8 +146,12 @@ const LoanCalculator = () => {
 
               <div className="pt-2 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Эффективная ставка:</span>
-                  <span className="font-semibold text-gray-800">{rate}% годовых</span>
+                  <span className="text-gray-600">Ставка:</span>
+                  <span className="font-semibold text-gray-800">{dailyRate}% в день</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Ставка в месяц:</span>
+                  <span className="font-semibold text-gray-800">{(dailyRate * 30).toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Переплата от суммы:</span>

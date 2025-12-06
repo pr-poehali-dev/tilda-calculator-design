@@ -1,0 +1,61 @@
+<!-- Инструкция по встраиванию калькулятора в Tilda -->
+<!-- 
+1. Откройте редактор Tilda
+2. Добавьте блок "HTML-код" (T123)
+3. Скопируйте весь код ниже и вставьте в блок
+4. Сохраните и опубликуйте страницу
+-->
+
+<div id="loan-calculator-root"></div>
+
+<style>
+  #loan-calculator-root {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Адаптация для мобильных */
+  @media (max-width: 768px) {
+    #loan-calculator-root {
+      padding: 0;
+    }
+  }
+</style>
+
+<script type="module" crossorigin>
+  // Замените YOUR_DEPLOY_URL на ваш реальный URL после публикации
+  // Например: https://your-project.poehali.dev
+  const CALCULATOR_URL = 'YOUR_DEPLOY_URL';
+  
+  // Создаём iframe для встраивания
+  const iframe = document.createElement('iframe');
+  iframe.src = CALCULATOR_URL;
+  iframe.style.width = '100%';
+  iframe.style.height = '100vh';
+  iframe.style.border = 'none';
+  iframe.style.overflow = 'auto';
+  
+  // Добавляем в контейнер
+  document.getElementById('loan-calculator-root').appendChild(iframe);
+  
+  // Автоматическая подстройка высоты iframe под контент
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.height) {
+      iframe.style.height = e.data.height + 'px';
+    }
+  });
+</script>
+
+<!-- 
+АЛЬТЕРНАТИВНЫЙ СПОСОБ: Прямая ссылка
+
+Если хотите открывать калькулятор на отдельной странице:
+1. Опубликуйте проект в poehali.dev
+2. Скопируйте URL вашего проекта
+3. Создайте кнопку в Tilda со ссылкой на этот URL
+
+Пример кнопки:
+<a href="YOUR_DEPLOY_URL" target="_blank" style="display: inline-block; padding: 15px 30px; background: #0EA5E9; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
+  Рассчитать займ
+</a>
+-->
