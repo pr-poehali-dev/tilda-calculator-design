@@ -18,8 +18,14 @@
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
 
+    --lime: 84 81% 44%;
+    --pink: 330 81% 60%;
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --chart-1: 84 81% 44%;
+    --chart-2: 199 89% 48%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;

@@ -1,221 +1,157 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
 
-interface PaymentSchedule {
-  month: number;
-  payment: number;
-  principal: number;
-  interest: number;
-  balance: number;
-}
-
 const LoanCalculator = () => {
-  const [amount, setAmount] = useState(300000);
-  const [term, setTerm] = useState(12);
+  const [amount, setAmount] = useState(10000);
+  const [days, setDays] = useState(15);
   const dailyRate = 0.08;
+  const isFirstLoan = true;
 
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
+  const [interest, setInterest] = useState(0);
   const [totalPayment, setTotalPayment] = useState(0);
-  const [overpayment, setOverpayment] = useState(0);
-  const [schedule, setSchedule] = useState<PaymentSchedule[]>([]);
+  const [returnDate, setReturnDate] = useState('');
 
   useEffect(() => {
-    const monthlyRate = (dailyRate * 30) / 100;
-    const payment = amount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
-    const total = payment * term;
-    const over = total - amount;
-
-    setMonthlyPayment(payment);
+    const rate = isFirstLoan ? 0 : dailyRate;
+    const calculatedInterest = (amount * rate * days) / 100;
+    const total = amount + calculatedInterest;
+    
+    setInterest(calculatedInterest);
     setTotalPayment(total);
-    setOverpayment(over);
 
-    const newSchedule: PaymentSchedule[] = [];
-    let balance = amount;
-
-    for (let i = 1; i <= term; i++) {
-      const interestPayment = balance * monthlyRate;
-      const principalPayment = payment - interestPayment;
-      balance -= principalPayment;
-
-      newSchedule.push({
-        month: i,
-        payment,
-        principal: principalPayment,
-        interest: interestPayment,
-        balance: Math.max(0, balance)
-      });
-    }
-
-    setSchedule(newSchedule);
-  }, [amount, term]);
+    const today = new Date();
+    today.setDate(today.getDate() + days);
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    };
+    setReturnDate(today.toLocaleDateString('ru-RU', options));
+  }, [amount, days, isFirstLoan]);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(num);
   };
 
+  const incrementAmount = () => setAmount(prev => Math.min(prev + 1000, 30000));
+  const decrementAmount = () => setAmount(prev => Math.max(prev - 1000, 3000));
+  const incrementDays = () => setDays(prev => Math.min(prev + 1, 21));
+  const decrementDays = () => setDays(prev => Math.max(prev - 1, 7));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Калькулятор займов</h1>
-          <p className="text-gray-600">Рассчитайте условия вашего займа</p>
-        </div>
+    <div className="min-h-screen bg-gray-100 py-8 px-4 flex items-center justify-center">
+      <div className="w-full max-w-xl">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 animate-scale-in">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+            Первый заём <span className="text-pink-600">бесплатно</span>
+          </h1>
+          <p className="text-gray-600 text-lg mb-8">ДЕНЬГИ У ВАС В 16:50</p>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="shadow-lg hover-scale animate-scale-in border-blue-100">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <Icon name="Calculator" size={24} />
-                Параметры займа
-              </CardTitle>
-              <CardDescription className="text-blue-50">
-                Настройте условия кредитования
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-base font-medium text-gray-700">Сумма займа</Label>
-                  <span className="text-2xl font-bold text-blue-600">{formatNumber(amount)} ₽</span>
-                </div>
-                <Slider
-                  value={[amount]}
-                  onValueChange={(val) => setAmount(val[0])}
-                  min={10000}
-                  max={1000000}
-                  step={10000}
-                  className="cursor-pointer"
-                />
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>10 000 ₽</span>
-                  <span>1 000 000 ₽</span>
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Сумма</h2>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={decrementAmount}
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-400 transition-colors text-xl font-bold"
+                  >
+                    -
+                  </button>
+                  <div className="px-6 py-2 border-2 border-gray-300 rounded-lg min-w-[140px] text-center">
+                    <span className="text-2xl font-semibold text-gray-800">{formatNumber(amount)} ₽</span>
+                  </div>
+                  <button
+                    onClick={incrementAmount}
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-400 transition-colors text-xl font-bold"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-base font-medium text-gray-700">Срок займа</Label>
-                  <span className="text-2xl font-bold text-blue-600">{term} мес.</span>
-                </div>
-                <Slider
-                  value={[term]}
-                  onValueChange={(val) => setTerm(val[0])}
-                  min={3}
-                  max={60}
-                  step={1}
-                  className="cursor-pointer"
-                />
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>3 месяца</span>
-                  <span>60 месяцев</span>
-                </div>
-              </div>
-
-
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg hover-scale animate-scale-in border-blue-100">
-            <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <Icon name="TrendingUp" size={24} />
-                Результаты расчёта
-              </CardTitle>
-              <CardDescription className="text-blue-50">
-                Итоговые показатели по займу
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                <p className="text-sm text-gray-600 mb-1">Ежемесячный платёж</p>
-                <p className="text-3xl font-bold text-blue-600">{formatNumber(monthlyPayment)} ₽</p>
-              </div>
-
-              <div className="bg-cyan-50 p-4 rounded-lg border-l-4 border-cyan-500">
-                <p className="text-sm text-gray-600 mb-1">Общая сумма выплат</p>
-                <p className="text-2xl font-bold text-cyan-600">{formatNumber(totalPayment)} ₽</p>
-              </div>
-
-              <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
-                <p className="text-sm text-gray-600 mb-1">Переплата по займу</p>
-                <p className="text-2xl font-bold text-orange-600">{formatNumber(overpayment)} ₽</p>
-              </div>
-
-              <div className="pt-2 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Ставка:</span>
-                  <span className="font-semibold text-gray-800">{dailyRate}% в день</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Ставка в месяц:</span>
-                  <span className="font-semibold text-gray-800">{(dailyRate * 30).toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Переплата от суммы:</span>
-                  <span className="font-semibold text-gray-800">{((overpayment / amount) * 100).toFixed(1)}%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="mt-6 shadow-lg animate-fade-in border-blue-100">
-          <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
-            <CardTitle className="flex items-center gap-2">
-              <Icon name="BarChart3" size={24} />
-              График платежей
-            </CardTitle>
-            <CardDescription className="text-blue-50">
-              Помесячная структура погашения займа
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="overflow-x-auto">
-              <div className="min-w-full space-y-2">
-                <div className="grid grid-cols-5 gap-2 text-sm font-semibold text-gray-600 pb-2 border-b-2 border-blue-200">
-                  <div>Месяц</div>
-                  <div className="text-right">Платёж</div>
-                  <div className="text-right">Основной долг</div>
-                  <div className="text-right">Проценты</div>
-                  <div className="text-right">Остаток</div>
-                </div>
-                <div className="max-h-96 overflow-y-auto space-y-1">
-                  {schedule.map((item) => (
-                    <div
-                      key={item.month}
-                      className="grid grid-cols-5 gap-2 text-sm py-2 px-2 rounded hover:bg-blue-50 transition-colors"
-                    >
-                      <div className="font-medium text-gray-700">{item.month}</div>
-                      <div className="text-right text-gray-800">{formatNumber(item.payment)}</div>
-                      <div className="text-right text-blue-600">{formatNumber(item.principal)}</div>
-                      <div className="text-right text-orange-600">{formatNumber(item.interest)}</div>
-                      <div className="text-right font-medium text-gray-700">{formatNumber(item.balance)}</div>
-                    </div>
-                  ))}
-                </div>
+              <Slider
+                value={[amount]}
+                onValueChange={(val) => setAmount(val[0])}
+                min={3000}
+                max={30000}
+                step={1000}
+                className="mb-2"
+              />
+              <div className="flex justify-between text-sm text-gray-400">
+                <span>от 3 000 ₽</span>
+                <span>до 30 000 ₽</span>
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="flex flex-wrap gap-4 justify-center text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                  <span className="text-gray-600">Основной долг</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-600 rounded"></div>
-                  <span className="text-gray-600">Проценты</span>
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Срок</h2>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={decrementDays}
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-400 transition-colors text-xl font-bold"
+                  >
+                    -
+                  </button>
+                  <div className="px-6 py-2 border-2 border-gray-300 rounded-lg min-w-[140px] text-center">
+                    <span className="text-2xl font-semibold text-gray-800">{days} дней</span>
+                  </div>
+                  <button
+                    onClick={incrementDays}
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-400 transition-colors text-xl font-bold"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
+              <Slider
+                value={[days]}
+                onValueChange={(val) => setDays(val[0])}
+                min={7}
+                max={21}
+                step={1}
+                className="mb-2"
+              />
+              <div className="flex justify-between text-sm text-gray-400">
+                <span>от 7 д</span>
+                <span>до 21 д</span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>💡 Расчёты носят информационный характер</p>
+            <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-gray-200">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Занимаете</p>
+                <p className="text-2xl font-bold text-gray-800">{formatNumber(amount)} ₽</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Проценты/день</p>
+                <div className="flex items-center gap-2">
+                  {!isFirstLoan && (
+                    <span className="text-lg text-gray-400 line-through">{dailyRate}%</span>
+                  )}
+                  <span className="text-2xl font-bold text-pink-600">0%</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">К возврату</p>
+                <p className="text-2xl font-bold text-gray-800">{formatNumber(totalPayment)} ₽</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-gray-600">
+              <Icon name="Calendar" size={20} className="text-gray-400" />
+              <span className="text-sm">В {returnDate}</span>
+            </div>
+
+            <Button 
+              className="w-full h-14 text-lg font-bold bg-lime-400 hover:bg-lime-500 text-gray-800 rounded-xl shadow-lg transition-all"
+            >
+              ПОЛУЧИТЬ БЕСПЛАТНО
+            </Button>
+          </div>
         </div>
       </div>
     </div>
